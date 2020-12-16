@@ -1,9 +1,11 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload');
+const objectid = require('mongodb').ObjectId;
 const cors = require('cors')
 const fs = require('fs-extra')
 require('dotenv').config()
+
 
 
 const MongoClient = require('mongodb').MongoClient;
@@ -17,7 +19,7 @@ app.use(fileUpload());
 const port = 9000
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Hello Creative agency world!')
 })
 
 
@@ -29,36 +31,39 @@ client.connect(err => {
   const adminCollection = client.db(`${process.env.DB_NAME}`).collection("admins");
   const massageCollection = client.db(`${process.env.DB_NAME}`).collection("massages");
 
+   //add order
+
   app.post('/addOrder', (req, res) => {
     const orders = req.body;
-    //console.log(orders)
     orderCollection.insertOne(orders)
     .then(result => {
       res.send(result.insertedCount)
+      console.log(orders);
     })
 })
 
+//show order list
 app.get('/myServiceList', (req, res) => {
-  const orders = req.body;
-  //console.log(orders)
-  orderCollection.find({})
+  orderCollection.find({email: req.query.email})
   .toArray((err, documents) => {
     res.send(documents)
+    console.log(documents);
   })    
   })
 
+   //add review
   app.post('/addReview', (req, res) => {
     const reviews = req.body;
-    //console.log(reviews)
     reviewsCollection.insertOne(reviews)
     .then(result => {
       res.send(result.insertedCount)
     })
 })
 
+ //show review
+
 app.get('/reviews', (req, res) => {
   const reviews = req.body;
-  //console.log(reviews)
   reviewsCollection.find({})
   .toArray((err, documents) => {
     res.send(documents)
@@ -66,25 +71,39 @@ app.get('/reviews', (req, res) => {
   })
 
 
-
+   //All customer order loaded in Admin ServiceList
     app.get('/allOrderServiceList', (req, res) => {
       const orders = req.body;
-      //console.log(orders)
       orderCollection.find({})
       .toArray((err, documents) => {
         res.send(documents)
       })    
       })
 
+      app.patch('/updateOrderStatus/:id',(req,res)=>{
+    
+        const id = req.params.id
+        const status = req.body.status
+        
+        orderCollection.updateOne(
+            {_id:objectid(id)},
+            {
+                $set:{"status":status}
+            }).then(result=>res.send("cdc"))
+            .catch(err=>{})
+        
+    })
+
+ //send MakeAdmin email to database
     app.post('/makeAdmin', (req, res) => {
       const admins = req.body;
-      //console.log(admins)
       adminCollection.insertOne(admins)
       .then(result => {
         res.send(result.insertedCount)
       })
   })
 
+  //add Services  
   app.post('/addNewService', (req, res) => {
     const file = req.files.file;
     const title = req.body.title;
@@ -104,24 +123,26 @@ app.get('/reviews', (req, res) => {
     })
 })
 
+//show Services  
 app.get('/services', (req, res) => {
   const services = req.body;
-  //console.log(services)
   servicesCollection.find({})
   .toArray((err, documents) => {
     res.send(documents)
   })    
   })
 
+  //check admin
+
 app.post('/isAdmin', (req, res) => {
   const email = req.body.email;
   adminCollection.find({ email: email })
       .toArray((err, documents) => {
            res.send(documents.length > 0);
-          //console.log(documents)
       })
 })
 
+//send massages
 app.post('/sendMassage', (req, res) => {
   const massages = req.body;
   console.log(massages)
