@@ -35,20 +35,31 @@ client.connect(err => {
 
   app.post('/addOrder', (req, res) => {
     const orders = req.body;
+    console.log(orders);
     orderCollection.insertOne(orders)
     .then(result => {
       res.send(result.insertedCount)
-      console.log(orders);
+      console.log(result);
     })
+})
+app.post('/addReview', (req, res) => {
+  const review = req.body;
+  console.log(review);
+  reviewsCollection.insertMany(review)
+  .then(result => {
+    res.send(result.insertedCount)
+    console.log(result);
+  })
 })
 
 //show order list
-app.get('/myServiceList', (req, res) => {
-  orderCollection.find({email: req.query.email})
-  .toArray((err, documents) => {
-    res.send(documents)
-    console.log(documents);
-  })    
+
+  app.get('/myServiceList', (req, res) => {
+    console.log(req.query.email, 'email')
+    orderCollection.find({email: req.query.email})
+    .toArray((err, documents) => {
+        res.send(documents)
+    })
   })
 
    //add review
@@ -72,7 +83,7 @@ app.get('/reviews', (req, res) => {
 
 
    //All customer order loaded in Admin ServiceList
-    app.get('/allOrderServiceList', (req, res) => {
+    app.get('/allOrderList', (req, res) => {
       const orders = req.body;
       orderCollection.find({})
       .toArray((err, documents) => {
