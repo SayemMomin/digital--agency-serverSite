@@ -91,6 +91,8 @@ app.get('/reviews', (req, res) => {
       })    
       })
 
+      //updated status
+
       app.patch('/updateOrderStatus/:id',(req,res)=>{
     
         const id = req.params.id
@@ -100,10 +102,13 @@ app.get('/reviews', (req, res) => {
             {_id:objectid(id)},
             {
                 $set:{"status":status}
-            }).then(result=>res.send("cdc"))
+            }).then(result=>
+              res.send(result.modifiedCount > 0)
+              )
             .catch(err=>{})
         
     })
+
 
  //send MakeAdmin email to database
     app.post('/makeAdmin', (req, res) => {
